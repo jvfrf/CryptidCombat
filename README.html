@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptid Combat - Dev Checklist</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #21222c 0%, #2f313f 100%);
+            color: #d1d1d1;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(47, 49, 63, 0.5);
+            border-radius: 15px;
+            border: 1px solid rgba(169, 152, 212, 0.2);
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #a998d4, #d3c5f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(169, 152, 212, 0.1);
+        }
+        .update-logger {
+            margin: 20px 0 10px; padding: 10px;
+            display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;
+        }
+        .update-logger button {
+            padding: 8px 15px; border: 1px solid #a998d4; border-radius: 5px;
+            background: transparent; color: #a998d4; font-weight: bold; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .update-logger button:hover { background: rgba(169, 152, 212, 0.2); }
+        #last-updated { font-size: 0.9em; color: #f0e68c; flex-basis: 100%; margin-top: 10px; }
+        .sync-container {
+            text-align: center; margin-bottom: 30px; padding: 20px;
+            background: rgba(47, 49, 63, 0.5); border-radius: 15px;
+            border: 1px solid rgba(169, 152, 212, 0.2);
+        }
+        .sync-container h2 { margin-bottom: 15px; color: #f0e68c; }
+        .sync-controls { display: flex; justify-content: center; gap: 30px; align-items: center; flex-wrap: wrap; }
+        .sync-box { text-align: center; }
+        .sync-box button, .sync-box input {
+             padding: 10px 20px; border: none; border-radius: 5px;
+             font-weight: bold; cursor: pointer; transition: all 0.2s ease;
+        }
+        #export-button { background-color: #a998d4; color: #21222c; }
+        #export-button:hover { background-color: #d3c5f0; }
+        #import-button { background-color: #f0e68c; color: #21222c; }
+        #import-button:hover { background-color: #fffac8; }
+        
+        .developers { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+        .dev-section {
+            background: rgba(255, 255, 255, 0.03); border-radius: 20px;
+            padding: 25px; border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .dev-header {
+            display: flex; align-items: center; margin-bottom: 25px;
+            padding-bottom: 15px; border-bottom: 2px solid rgba(169, 152, 212, 0.3);
+        }
+        .dev-avatar {
+            width: 60px; height: 60px; border-radius: 50%; margin-right: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: bold; color: white;
+        }
+        .mindsigh-avatar { background: linear-gradient(45deg, #a998d4, #8b75b1); }
+        .hasty-avatar { background: linear-gradient(45deg, #f0e68c, #d8cd7d); }
+        .dev-info h2 { margin-bottom: 5px; font-size: 1.4rem; color: #d3c5f0; }
+        .dev-role { color: #b0b0b0; font-size: 0.9rem; }
+        
+        .dev-progress-header {
+            background: rgba(0,0,0,0.2); padding: 15px 20px;
+            border-radius: 10px; margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .progress-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; color: #f0e68c; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #a998d4, #d3c5f0); transition: width 0.3s ease; border-radius: 4px; }
+        
+        .task-category { margin-bottom: 20px; }
+        .category-header {
+            font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;
+            color: #a998d4; border-left: 4px solid #a998d4; padding-left: 10px;
+        }
+        .task {
+            display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.2); border-radius: 8px;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .task:hover { background: rgba(169, 152, 212, 0.1); transform: translateX(5px); }
+        .task.completed { background: rgba(77, 189, 116, 0.1); }
+        .task-checkbox {
+            width: 20px; height: 20px; border: 2px solid #a998d4; border-radius: 4px;
+            margin-right: 15px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .task-checkbox.checked { background: #a998d4; border-color: #a998d4; }
+        .task-checkbox.checked::after { content: '✓'; color: #21222c; font-weight: bold; font-size: 14px; }
+        .task-text { flex: 1; font-size: 0.95rem; line-height: 1.4; }
+        .task.completed .task-text { text-decoration: line-through; opacity: 0.6; }
+
+        .priority-high { border-left-color: #e55353; }
+        .priority-medium { border-left-color: #f0e68c; }
+        .priority-low { border-left-color: #4dbd74; }
+        
+        @media (max-width: 900px) { .developers { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cryptid Combat Dev Hub</h1>
+            <p>A collaborative checklist for our game project.</p>
+            <div class="update-logger">
+                <button id="update-mindsigh">Log Mindsigh13 Update</button>
+                <button id="update-hasty">Log hasty_wasty Update</button>
+                <p id="last-updated">Last update by: N/A</p>
+            </div>
+        </div>
+
+        <div class="sync-container">
+            <h2>Progress Sync</h2>
+            <div class="sync-controls">
+                <div class="sync-box">
+                    <h3>1. Send Your Progress</h3>
+                    <button id="export-button">Export My Progress</button>
+                </div>
+                <div class="sync-box">
+                    <h3>2. Get Partner's Progress</h3>
+                    <input type="file" id="import-file" accept=".json" style="display: none;">
+                    <button id="import-button" onclick="document.getElementById('import-file').click();">Import Partner's Progress</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="developers">
+            <div class="dev-section">
+                <div class="dev-header">
+                    <div class="dev-avatar mindsigh-avatar">🎨</div>
+                    <div class="dev-info"><h2>Mindsigh13</h2><div class="dev-role">3D Artist & Visual Designer</div></div>
+                </div>
+                <div class="dev-progress-header">
+                    <div class="progress-title">Overall Art Progress</div>
+                    <div class="progress-bar"><div class="progress-bar-fill" id="mindsigh-progress" style="width: 0%"></div></div>
+                </div>
+                <div class="task-category"><div class="category-header">Character Modeling (High-Poly)</div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Sculpt Yeti</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Sculpt Dragon-Knight</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Sculpt Forest Sprite</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Sculpt Mothman</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Sculpt Jersey Devil</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Sculpt Space Alien</div></div>
+                </div>
+                <div class="task-category"><div class="category-header">Retopology & UVs</div>
+                    <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Retopologize & UV unwrap Yeti</div></div>
+                    <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Retopologize & UV unwrap Dragon-Knight</div></div>
+                     <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Retopologize & UV unwrap Forest Sprite</div></div>
+                    <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Retopologize & UV unwrap Mothman</div></div>
+                </div>
+                <div class="task-category"><div class="category-header">Environment Modeling</div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Model & blockout Ice Cavern Arena</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Model & blockout Haunted Forest Arena</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Model & blockout Alien Lab Arena</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Create Ice Spike environmental prop</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Create interactive Mushroom environmental prop</div></div>
+                </div>
+                 <div class="task-category"><div class="category-header">Texturing</div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Yeti</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Dragon-Knight</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Forest Sprite</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Mothman</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Jersey Devil</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Space Alien</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Ice Cavern Arena</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Haunted Forest Arena</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Texture Alien Lab Arena</div></div>
+                </div>
+                <div class="task-category"><div class="category-header">UI & Icons</div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Create UI Style Guide (color palette, fonts)</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design Character Select UI Mockup</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design Preparation Phase UI Mockup</div></div>
+                    <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design Victory/Defeat screen assets</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design ability icons for Yeti (3)</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design ability icons for Dragon-Knight (3)</div></div>
+                    <div class="task priority-high" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design ability icons for all other cryptids (12)</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Create 2D portraits for all 6 cryptids</div></div>
+                </div>
+                 <div class="task-category"><div class="category-header">VFX Concepts</div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design core Impact VFX concept</div></div>
+                    <div class="task priority-medium" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design core Projectile VFX concept</div></div>
+                    <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design Stun status effect VFX</div></div>
+                    <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design Burn status effect VFX</div></div>
+                    <div class="task priority-low" data-dev="mindsigh"><div class="task-checkbox"></div><div class="task-text">Design Slow status effect VFX</div></div>
+                </div>
+            </div>
+            <div class="dev-section">
+                <div class="dev-header">
+                    <div class="dev-avatar hasty-avatar">💻</div>
+                    <div class="dev-info"><h2>hasty_wasty</h2><div class="dev-role">Gameplay Programmer</div></div>
+                </div>
+                <div class="dev-progress-header">
+                    <div class="progress-title">Overall Programming Progress</div>
+                    <div class="progress-bar"><div class="progress-bar-fill" id="hasty-progress" style="width: 0%"></div></div>
+                </div>
+                <div class="task-category"><div class="category-header">Project & Character Foundation</div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Setup UE5 Project & Version Control (Git)</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Create base Cryptid character class</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Health and Damage system</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement core stat system (Atk, Def, Spd)</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement flexible Ability System framework</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement ability upgrade/point system</div></div>
+                </div>
+                <div class="task-category"><div class="category-header">Game Flow & UI Logic</div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Code Game State Manager (Select → Prep → Battle → End)</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement functional Character Selection screen logic</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Preparation Phase UI logic and timer</div></div>
+                    <div class="task priority-low" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Create basic in-game HUD (HP bars, timers)</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Best of 3 tournament logic</div></div>
+                </div>
+                <div class="task-category"><div class="category-header">Ability Implementation</div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement abilities for Yeti (Tank)</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement abilities for Forest Sprite (Support)</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement abilities for Dragon-Knight (Berserker)</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement abilities for Mothman (Assassin)</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement abilities for Jersey Devil (Ranged)</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement abilities for Space Alien (Tech)</div></div>
+                </div>
+                <div class="task-category"><div class="category-header">AI & Core Mechanics</div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Stun status effect</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Slow status effect</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Damage-over-Time (DoT) status effect</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Code basic AI behavior for Tank & Support classes</div></div>
+                    <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Code basic AI behavior for Berserker & Assassin classes</div></div>
+                     <div class="task priority-medium" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Code basic AI behavior for Ranged & Tech classes</div></div>
+                </div>
+                 <div class="task-category"><div class="category-header">Arenas & Polish</div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Ice Cavern environmental effects</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Haunted Forest environmental effects</div></div>
+                    <div class="task priority-high" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Implement Alien Lab environmental effects</div></div>
+                    <div class="task priority-low" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Integrate VFX & SFX hooks into ability system</div></div>
+                    <div class="task priority-low" data-dev="hasty"><div class="task-checkbox"></div><div class="task-text">Final bug fixing and performance optimization</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- CONFIG ---
+        const STORAGE_KEY_TASKS = 'cryptid-combat-tasks-v3'; // Incremented version to avoid conflicts
+        const STORAGE_KEY_UPDATER = 'cryptid-combat-updater-v3';
+
+        // --- GLOBAL STATE ---
+        let taskData = JSON.parse(localStorage.getItem(STORAGE_KEY_TASKS) || '{}');
+
+        // --- UI ELEMENTS ---
+        const lastUpdatedP = document.getElementById('last-updated');
+        const exportButton = document.getElementById('export-button');
+        const importFile = document.getElementById('import-file');
+        
+        // --- FUNCTIONS ---
+        function generateTaskId(taskElement) {
+            const dev = taskElement.dataset.dev;
+            const taskText = taskElement.querySelector('.task-text').textContent;
+            // Create a simple, unique hash from dev and task text
+            return `${dev}-${taskText.trim().toLowerCase().replace(/\s+/g, '-')}`;
+        }
+
+        function updateLastUpdater(name) {
+             const updateInfo = {
+                name: name,
+                time: new Date().toISOString()
+            };
+            localStorage.setItem(STORAGE_KEY_UPDATER, JSON.stringify(updateInfo));
+            lastUpdatedP.textContent = `Last update by: ${updateInfo.name} at ${new Date(updateInfo.time).toLocaleTimeString()}`;
+        }
+        
+        function renderChecklistState() {
+            document.querySelectorAll('.task').forEach(task => {
+                const taskId = generateTaskId(task);
+                const checkbox = task.querySelector('.task-checkbox');
+                if (taskData[taskId]) {
+                    task.classList.add('completed');
+                    checkbox.classList.add('checked');
+                } else {
+                    task.classList.remove('completed');
+                    checkbox.classList.remove('checked');
+                }
+            });
+            updateAllProgress();
+        }
+        
+        function updateProgressForDev(devName) {
+            const allTasks = document.querySelectorAll(`.task[data-dev="${devName}"]`);
+            const completedTasks = document.querySelectorAll(`.task.completed[data-dev="${devName}"]`);
+            
+            const progress = (allTasks.length > 0) ? (completedTasks.length / allTasks.length) * 100 : 0;
+            
+            const progressBarFill = document.getElementById(`${devName}-progress`);
+            if(progressBarFill) {
+                progressBarFill.style.width = `${progress}%`;
+            }
+        }
+
+        function updateAllProgress() {
+            updateProgressForDev('mindsigh');
+            updateProgressForDev('hasty');
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('update-mindsigh').addEventListener('click', () => updateLastUpdater('Mindsigh13'));
+        document.getElementById('update-hasty').addEventListener('click', () => updateLastUpdater('hasty_wasty'));
+
+        document.querySelectorAll('.task').forEach(task => {
+            task.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent any default link behavior
+                const taskId = generateTaskId(task);
+                if (task.classList.contains('completed')) {
+                    delete taskData[taskId];
+                } else {
+                    taskData[taskId] = true;
+                }
+                localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(taskData));
+                renderChecklistState();
+            });
+        });
+
+        exportButton.addEventListener('click', () => {
+            const dataStr = JSON.stringify(taskData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `progress_update_${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            alert('Exported progress file! Send it to your partner.');
+        });
+        
+        importFile.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    // Merge imported data with existing data, allowing the imported file to overwrite.
+                    taskData = { ...taskData, ...importedData };
+                    localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(taskData));
+                    renderChecklistState(); // Re-render the entire checklist with merged data
+                    alert('Progress successfully imported and merged!');
+                } catch (error) {
+                    alert('Error reading or parsing the file. Please ensure it is a valid progress file.');
+                    console.error("Import Error:", error);
+                }
+            };
+            reader.readAsText(file);
+            // Reset file input to allow importing the same file again if needed
+            event.target.value = '';
+        });
+
+        // --- INITIALIZATION ---
+        window.addEventListener('load', () => {
+            const savedUpdater = JSON.parse(localStorage.getItem(STORAGE_KEY_UPDATER) || '{}');
+            if (savedUpdater.name && savedUpdater.time) {
+                lastUpdatedP.textContent = `Last update by: ${savedUpdater.name} at ${new Date(savedUpdater.time).toLocaleTimeString()}`;
+            }
+            renderChecklistState();
+        });
+    </script>
+</body>
+
+<details style="margin-top: 60px; background: rgba(47, 49, 63, 0.5); padding: 20px; border-radius: 15px; border: 1px solid rgba(169, 152, 212, 0.2); color: #d1d1d1;">
+  <summary style="font-size: 1.3rem; color: #f0e68c; cursor: pointer;">📄 View Full Game Design Document (Markdown)</summary>
+  <pre style="white-space: pre-wrap; margin-top: 15px; font-size: 0.9rem; line-height: 1.5; color: #ccc;">
+Cryptid Combat - Auto Battler Game Design Document
+
+🎮 Core Concept  
+Genre: 1v1 Auto Battler  
+Style: Fantasy-Cartoon (Blizzard/OG Warcraft inspired)  
+Platform: PC (Windows/Linux compatible)  
+Development: Unreal Engine 5.6
+Timeline: 2 Week Game Jam  
+
+⚔️ Game Flow  
+- Character Selection (15s): Choose cryptid  
+- Prep Phase (20s): Spend 6 points to upgrade 3 abilities  
+- Auto Battle Phase (30-45s): AI combat  
+- Victory Screen (10s): See results and return to select  
+
+👹 Cryptid Roster (6 Total)  
+Tank - Yeti  
+Support - Forest Sprite  
+Berserker - Dragon-Knight  
+Assassin - Mothman  
+Ranged - Jersey Devil  
+Tech - Space Alien  
+(Each has 3 Leveled  abilities with scaling bonuses)
+
+🏟️ Arena Environments  
+Ice Cavern: Freezing Aura + random ice spike damage  
+Haunted Forest: Random debuffs + buff/debuff mushrooms  
+Alien Lab: Ability boost + random battlefield tech effects  
+
+🎯 Auto Battler Mechanics  
+- Stats: Attack, Defense, Speed (1-10), HP (100-200)  
+- AI Priority Logic  
+- Victory: First to 0 HP  
+- Best of 3 with reallocation between rounds  
+
+🎨 Art Direction  
+- Fantasy-cartoon sculpts  
+- Mystical-tech UI theme  
+- Readable silhouettes + polished VFX  
+
+Team: Mindsigh13 (Art) + hasty_wasty (Programming)  
+Updated: June 24, 2025  
+  </pre>
+</details>
+
+</html>
